@@ -99,13 +99,19 @@ void TebVisualization::publishLocalPlanAndPoses(const TimedElasticBand& teb) con
     geometry_msgs::PoseArray teb_poses;
     teb_poses.header.frame_id = teb_path.header.frame_id;
     teb_poses.header.stamp = teb_path.header.stamp;
-    
+
+    auto timeDiffs = teb.timediffs();
+
     // fill path msgs with teb configurations
     for (int i=0; i < teb.sizePoses(); i++)
     {
       geometry_msgs::PoseStamped pose;
       pose.header.frame_id = teb_path.header.frame_id;
-      pose.header.stamp = teb_path.header.stamp;
+      if (i == 0) {
+        pose.header.stamp = teb_path.header.stamp;
+      } else {
+        pose.header.stamp = ros::Time(ros::Time(teb_path.poses[i - 1].header.stamp).toSec() + timeDiffs[i - 1]->dt());
+      }
       pose.pose.position.x = teb.Pose(i).x();
       pose.pose.position.y = teb.Pose(i).y();
       pose.pose.position.z = cfg_->hcp.visualize_with_time_as_z_axis_scale*teb.getSumOfTimeDiffsUpToIdx(i);
