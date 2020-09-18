@@ -85,7 +85,7 @@ void TebVisualization::publishLocalPlan(const std::vector<geometry_msgs::PoseSta
   base_local_planner::publishPlan(local_plan, local_plan_pub_); 
 }
 
-void TebVisualization::publishLocalPlanAndPoses(const TimedElasticBand& teb) const
+void TebVisualization::publishLocalPlanAndPoses(const TimedElasticBand& teb, ros::Time startPlanningTime) const
 {
   if ( printErrorWhenNotInitialized() )
     return;
@@ -108,7 +108,7 @@ void TebVisualization::publishLocalPlanAndPoses(const TimedElasticBand& teb) con
       geometry_msgs::PoseStamped pose;
       pose.header.frame_id = teb_path.header.frame_id;
       if (i == 0) {
-        pose.header.stamp = teb_path.header.stamp;
+        pose.header.stamp = startPlanningTime;
       } else {
         pose.header.stamp = ros::Time(ros::Time(teb_path.poses[i - 1].header.stamp).toSec() + timeDiffs[i - 1]->dt());
       }

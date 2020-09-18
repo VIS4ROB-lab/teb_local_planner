@@ -126,7 +126,7 @@ public:
    * and the pose sequence to  \e ../../teb_poses.
    * @param teb const reference to a Timed_Elastic_Band
    */
-  void publishLocalPlanAndPoses(const TimedElasticBand& teb) const;
+  void publishLocalPlanAndPoses(const TimedElasticBand& teb, ros::Time startPlanningTime = ros::Time::now()) const;
   
   /**
    * @brief Publish the visualization of the robot model

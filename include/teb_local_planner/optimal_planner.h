@@ -321,8 +321,11 @@ public:
    * Make sure to register a TebVisualization instance before using setVisualization() or an overlaoded constructor.
    * @see setVisualization
    */
-  virtual void visualize();
-  
+  void visualize() override{
+      visualize(ros::Time::now());
+  }
+
+  void visualize(ros::Time startPlanningTime=ros::Time::now());
   //@}
   
   

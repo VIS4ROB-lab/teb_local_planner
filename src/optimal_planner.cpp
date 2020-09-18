@@ -110,12 +110,12 @@ void TebOptimalPlanner::setVisualization(TebVisualizationPtr visualization)
   visualization_ = visualization;
 }
 
-void TebOptimalPlanner::visualize()
+void TebOptimalPlanner::visualize(ros::Time startPlanningTime)
 {
   if (!visualization_)
     return;
  
-  visualization_->publishLocalPlanAndPoses(teb_);
+  visualization_->publishLocalPlanAndPoses(teb_, startPlanningTime);
   
   if (teb_.sizePoses() > 0)
     visualization_->publishRobotFootprintModel(teb_.Pose(0), *robot_model_);

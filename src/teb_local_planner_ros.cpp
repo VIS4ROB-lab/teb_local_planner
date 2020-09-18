@@ -230,6 +230,7 @@ uint32_t TebLocalPlannerROS::computeVelocityCommands(const geometry_msgs::PoseSt
                                                      geometry_msgs::TwistStamped &cmd_vel,
                                                      std::string &message)
 {
+  ros::Time startPlanningTime = ros::Time::now();
   // check if plugin initialized
   if(!initialized_)
   {
@@ -424,8 +425,20 @@ uint32_t TebLocalPlannerROS::computeVelocityCommands(const geometry_msgs::PoseSt
   // store last command (for recovery analysis etc.)
   last_cmd_ = cmd_vel.twist;
   
-  // Now visualize everything    
-  planner_->visualize();
+  // Now visualize everything
+  auto homotopyClassPlanner = boost::dynamic_pointer_cast<HomotopyClassPlanner>(planner_);
+  if (homotopyClassPlanner){
+    homotopyClassPlanner->visualize(startPlanningTime);
+  }
+  else{
+    auto tebPlanner = boost::dynamic_pointer_cast<TebOptimalPlanner>(planner_);
+    if (tebPlanner){
+      tebPlanner->visualize(startPlanningTime);
+    }
+    else{
+      planner_->visualize();
+    }
+  }
   visualization_->publishObstacles(obstacles_);
   visualization_->publishViaPoints(via_points_);
   visualization_->publishGlobalPlan(global_plan_);
