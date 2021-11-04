@@ -178,6 +178,12 @@ void TebLocalPlannerROS::initialize(std::string name, tf2_ros::Buffer* tf, costm
     double controller_frequency = 5;
     nh_move_base.param("controller_frequency", controller_frequency, controller_frequency);
     failure_detector_.setBufferLength(std::round(cfg_.recovery.oscillation_filter_duration*controller_frequency));
+
+    // FEATURE DYNAMIC PLANNING
+    // Add custom subscribers to the failure detector
+    std::string global_planner_plan;
+    nh_move_base.param("global_planner_plan", global_planner_plan, std::string(""));
+    m_global_path_sub = nh.subscribe(global_planner_plan, 1, &TebLocalPlannerROS::planSub, this);
     
     // set initialized flag
     initialized_ = true;
@@ -190,7 +196,10 @@ void TebLocalPlannerROS::initialize(std::string name, tf2_ros::Buffer* tf, costm
   }
 }
 
-
+// FEATURE DYNAMIC PLANNING
+void TebLocalPlannerROS::planSub(const nav_msgs::PathConstPtr& global_plan_msg) {
+    setPlan(global_plan_msg->poses);
+}
 
 bool TebLocalPlannerROS::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan)
 {

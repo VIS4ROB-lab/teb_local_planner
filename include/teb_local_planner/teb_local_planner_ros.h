@@ -388,8 +388,8 @@ protected:
   
   void configureBackupModes(std::vector<geometry_msgs::PoseStamped>& transformed_plan,  int& goal_idx);
 
-
-  
+  // FEATURE DYNAMIC PLANNING
+  void planSub(const nav_msgs::PathConstPtr& global_plan_msg);
 private:
   // Definition of member variables
 
@@ -442,6 +442,9 @@ private:
     
   // flags
   bool initialized_; //!< Keeps track about the correct initialization of this class
+
+  // FEATURE DYNAMIC PLANNING
+  ros::Subscriber m_global_path_sub;
 
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
