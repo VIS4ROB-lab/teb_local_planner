@@ -182,9 +182,10 @@ void TebLocalPlannerROS::initialize(std::string name, tf2_ros::Buffer* tf, costm
     // FEATURE DYNAMIC PLANNING
     // Add custom subscribers to the failure detector
     std::string global_planner_plan;
-    nh_move_base.param("global_planner_plan", global_planner_plan, std::string(""));
+    nh.param("global_planner_plan", global_planner_plan, std::string(""));
     m_global_path_sub = nh.subscribe(global_planner_plan, 1, &TebLocalPlannerROS::planSub, this);
-    
+    ROS_INFO_STREAM("TebLocalPlanner subscribed to " << global_planner_plan);
+
     // set initialized flag
     initialized_ = true;
 

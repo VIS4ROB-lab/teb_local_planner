@@ -4,7 +4,7 @@
 std_msgs/Header header
 
 # The planned trajectory (or if multiple plans exist, all of them)
-teb_local_planner/TrajectoryMsg[] trajectories
+teb_local_planner_dynamic_planning/TrajectoryMsg[] trajectories
 
 # Index of the trajectory in 'trajectories' that is selected currently
 uint16 selected_trajectory_idx

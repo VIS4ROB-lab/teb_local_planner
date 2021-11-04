@@ -38,7 +38,7 @@
 
 #include <teb_local_planner/visualization.h>
 #include <teb_local_planner/optimal_planner.h>
-#include <teb_local_planner/FeedbackMsg.h>
+#include <teb_local_planner_dynamic_planning/FeedbackMsg.h>
 
 namespace teb_local_planner
 {
@@ -65,7 +65,7 @@ void TebVisualization::initialize(ros::NodeHandle& nh, const TebConfig& cfg)
   local_plan_pub_ = nh.advertise<nav_msgs::Path>("local_plan",1);
   teb_poses_pub_ = nh.advertise<geometry_msgs::PoseArray>("teb_poses", 100);
   teb_marker_pub_ = nh.advertise<visualization_msgs::Marker>("teb_markers", 1000);
-  feedback_pub_ = nh.advertise<teb_local_planner::FeedbackMsg>("teb_feedback", 10);  
+  feedback_pub_ = nh.advertise<teb_local_planner_dynamic_planning::FeedbackMsg>("teb_feedback", 10);  
   
   initialized_ = true; 
 }
@@ -427,7 +427,7 @@ if ( printErrorWhenNotInitialized() )
 void TebVisualization::publishFeedbackMessage(const std::vector< boost::shared_ptr<TebOptimalPlanner> >& teb_planners,
                                               unsigned int selected_trajectory_idx, const ObstContainer& obstacles)
 {
-  FeedbackMsg msg;
+  teb_local_planner_dynamic_planning::FeedbackMsg msg;
   msg.header.stamp = ros::Time::now();
   msg.header.frame_id = cfg_->map_frame;
   msg.selected_trajectory_idx = selected_trajectory_idx;
@@ -468,7 +468,7 @@ void TebVisualization::publishFeedbackMessage(const std::vector< boost::shared_p
 
 void TebVisualization::publishFeedbackMessage(const TebOptimalPlanner& teb_planner, const ObstContainer& obstacles)
 {
-  FeedbackMsg msg;
+  teb_local_planner_dynamic_planning::FeedbackMsg msg;
   msg.header.stamp = ros::Time::now();
   msg.header.frame_id = cfg_->map_frame;
   msg.selected_trajectory_idx = 0;

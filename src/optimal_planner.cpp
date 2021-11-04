@@ -1170,7 +1170,7 @@ void TebOptimalPlanner::getVelocityProfile(std::vector<geometry_msgs::Twist>& ve
   velocity_profile.back().angular.z = vel_goal_.second.angular.z;
 }
 
-void TebOptimalPlanner::getFullTrajectory(std::vector<TrajectoryPointMsg>& trajectory) const
+void TebOptimalPlanner::getFullTrajectory(std::vector<teb_local_planner_dynamic_planning::TrajectoryPointMsg>& trajectory) const
 {
   int n = teb_.sizePoses();
   
@@ -1182,7 +1182,7 @@ void TebOptimalPlanner::getFullTrajectory(std::vector<TrajectoryPointMsg>& traje
   double curr_time = 0;
   
   // start
-  TrajectoryPointMsg& start = trajectory.front();
+  teb_local_planner_dynamic_planning::TrajectoryPointMsg& start = trajectory.front();
   teb_.Pose(0).toPoseMsg(start.pose);
   start.velocity.linear.z = 0;
   start.velocity.angular.x = start.velocity.angular.y = 0;
@@ -1196,7 +1196,7 @@ void TebOptimalPlanner::getFullTrajectory(std::vector<TrajectoryPointMsg>& traje
   // intermediate points
   for (int i=1; i < n-1; ++i)
   {
-    TrajectoryPointMsg& point = trajectory[i];
+    teb_local_planner_dynamic_planning::TrajectoryPointMsg& point = trajectory[i];
     teb_.Pose(i).toPoseMsg(point.pose);
     point.velocity.linear.z = 0;
     point.velocity.angular.x = point.velocity.angular.y = 0;
@@ -1212,7 +1212,7 @@ void TebOptimalPlanner::getFullTrajectory(std::vector<TrajectoryPointMsg>& traje
   }
   
   // goal
-  TrajectoryPointMsg& goal = trajectory.back();
+  teb_local_planner_dynamic_planning::TrajectoryPointMsg& goal = trajectory.back();
   teb_.BackPose().toPoseMsg(goal.pose);
   goal.velocity.linear.z = 0;
   goal.velocity.angular.x = goal.velocity.angular.y = 0;

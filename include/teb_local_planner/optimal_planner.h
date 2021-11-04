@@ -63,7 +63,7 @@
 #include <nav_msgs/Path.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <tf/transform_datatypes.h>
-#include <teb_local_planner/TrajectoryMsg.h>
+#include <teb_local_planner_dynamic_planning/TrajectoryMsg.h>
 
 #include <nav_msgs/Odometry.h>
 #include <limits.h>
@@ -484,7 +484,7 @@ public:
    * @todo The acceleration profile is not added at the moment.
    * @param[out] trajectory the resulting trajectory
    */
-  void getFullTrajectory(std::vector<TrajectoryPointMsg>& trajectory) const;
+  void getFullTrajectory(std::vector<teb_local_planner_dynamic_planning::TrajectoryPointMsg>& trajectory) const;
   
   /**
    * @brief Check whether the planned trajectory is feasible or not.
