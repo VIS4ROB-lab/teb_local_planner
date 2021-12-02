@@ -36,12 +36,12 @@
  * Author: Christoph Rösmann
  *********************************************************************/
 
-#include <teb_local_planner/obstacles.h>
+#include <teb_local_planner_dynamic_planning/obstacles.h>
 #include <ros/console.h>
 #include <ros/assert.h>
-// #include <teb_local_planner/misc.h>
+// #include <teb_local_planner_dynamic_planning/misc.h>
 
-namespace teb_local_planner
+namespace teb_local_planner_dynamic_planning
 {
 
 
@@ -211,4 +211,4 @@ void PolygonObstacle::toPolygonMsg(geometry_msgs::Polygon& polygon)
 
 
 
-} // namespace teb_local_planner
+} // namespace teb_local_planner_dynamic_planning

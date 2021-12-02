@@ -36,11 +36,11 @@
  * Author: Christoph Rösmann
  *********************************************************************/
 
-#include <teb_local_planner/visualization.h>
-#include <teb_local_planner/optimal_planner.h>
+#include <teb_local_planner_dynamic_planning/visualization.h>
+#include <teb_local_planner_dynamic_planning/optimal_planner.h>
 #include <teb_local_planner_dynamic_planning/FeedbackMsg.h>
 
-namespace teb_local_planner
+namespace teb_local_planner_dynamic_planning
 {
 
 TebVisualization::TebVisualization() : initialized_(false)
@@ -520,4 +520,4 @@ bool TebVisualization::printErrorWhenNotInitialized() const
   return false;
 }
 
-} // namespace teb_local_planner
+} // namespace teb_local_planner_dynamic_planning

@@ -36,14 +36,14 @@
  * Author: Christoph Rösmann
  *********************************************************************/
 
-#include <teb_local_planner/recovery_behaviors.h>
+#include <teb_local_planner_dynamic_planning/recovery_behaviors.h>
 #include <ros/ros.h>
 #include <limits>
 #include <functional>
 #include <numeric>
 #include <g2o/stuff/misc.h>
 
-namespace teb_local_planner
+namespace teb_local_planner_dynamic_planning
 {
 
 // ============== FailureDetector Implementation ===================
@@ -115,4 +115,4 @@ bool FailureDetector::detect(double v_eps, double omega_eps)
     
     
 
-} // namespace teb_local_planner
+} // namespace teb_local_planner_dynamic_planning

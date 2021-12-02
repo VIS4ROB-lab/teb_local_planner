@@ -36,11 +36,11 @@
  * Author: Christoph Rösmann
  *********************************************************************/
 
-#include <teb_local_planner/homotopy_class_planner.h>
+#include <teb_local_planner_dynamic_planning/homotopy_class_planner.h>
 
 #include <limits>
 
-namespace teb_local_planner
+namespace teb_local_planner_dynamic_planning
 {
 
 HomotopyClassPlanner::HomotopyClassPlanner() : cfg_(NULL), obstacles_(NULL), via_points_(NULL), robot_model_(new PointRobotFootprint()), initial_plan_(NULL), initialized_(false)

@@ -87,7 +87,7 @@ def feedback_callback(data):
     @type  data: visualization_msgs/Marker
 
     @globalparam tebList: Received TEB List
-    @globaltype  tebList: teb_local_planner/FeedbackMsg
+    @globaltype  tebList: teb_local_planner_dynamic_planning/FeedbackMsg
     """
     # TODO: Remove global variables
     global feedbackMsg

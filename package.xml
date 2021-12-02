@@ -51,7 +51,7 @@
   <depend>visualization_msgs</depend>
 
   <export>
-    <nav_core plugin="${prefix}/teb_local_planner_plugin.xml"/>
-    <mbf_costmap_core plugin="${prefix}/teb_local_planner_plugin.xml"/>
+    <nav_core plugin="${prefix}/teb_local_planner_dynamic_planning_plugin.xml"/>
+    <mbf_costmap_core plugin="${prefix}/teb_local_planner_dynamic_planning_plugin.xml"/>
   </export>
 </package>

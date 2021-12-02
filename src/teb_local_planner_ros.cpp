@@ -36,7 +36,7 @@
  * Author: Christoph Rösmann
  *********************************************************************/
 
-#include <teb_local_planner/teb_local_planner_ros.h>
+#include <teb_local_planner_dynamic_planning/teb_local_planner_ros.h>
 
 #include <tf2_eigen/tf2_eigen.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -59,14 +59,14 @@
 
 
 // register this planner both as a BaseLocalPlanner and as a MBF's CostmapController plugin
-PLUGINLIB_EXPORT_CLASS(teb_local_planner::TebLocalPlannerROS, nav_core::BaseLocalPlanner)
-PLUGINLIB_EXPORT_CLASS(teb_local_planner::TebLocalPlannerROS, mbf_costmap_core::CostmapController)
+PLUGINLIB_EXPORT_CLASS(teb_local_planner_dynamic_planning::TebLocalPlannerDynamicPlanningROS, nav_core::BaseLocalPlanner)
+PLUGINLIB_EXPORT_CLASS(teb_local_planner_dynamic_planning::TebLocalPlannerDynamicPlanningROS, mbf_costmap_core::CostmapController)
 
-namespace teb_local_planner
+namespace teb_local_planner_dynamic_planning
 {
   
 
-TebLocalPlannerROS::TebLocalPlannerROS() : costmap_ros_(NULL), tf_(NULL), costmap_model_(NULL),
+TebLocalPlannerDynamicPlanningROS::TebLocalPlannerDynamicPlanningROS() : costmap_ros_(NULL), tf_(NULL), costmap_model_(NULL),
                                            costmap_converter_loader_("costmap_converter", "costmap_converter::BaseCostmapToPolygons"),
                                            dynamic_recfg_(NULL), custom_via_points_active_(false), goal_reached_(false), no_infeasible_plans_(0),
                                            last_preferred_rotdir_(RotType::none), initialized_(false)
@@ -74,16 +74,16 @@ TebLocalPlannerROS::TebLocalPlannerROS() : costmap_ros_(NULL), tf_(NULL), costma
 }
 
 
-TebLocalPlannerROS::~TebLocalPlannerROS()
+TebLocalPlannerDynamicPlanningROS::~TebLocalPlannerDynamicPlanningROS()
 {
 }
 
-void TebLocalPlannerROS::reconfigureCB(TebLocalPlannerReconfigureConfig& config, uint32_t level)
+void TebLocalPlannerDynamicPlanningROS::reconfigureCB(TebLocalPlannerDynamicPlanningReconfigureConfig& config, uint32_t level)
 {
   cfg_.reconfigure(config);
 }
 
-void TebLocalPlannerROS::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros)
+void TebLocalPlannerDynamicPlanningROS::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros)
 {
   // check if the plugin is already initialized
   if(!initialized_)
@@ -160,18 +160,18 @@ void TebLocalPlannerROS::initialize(std::string name, tf2_ros::Buffer* tf, costm
     odom_helper_.setOdomTopic(cfg_.odom_topic);
 
     // setup dynamic reconfigure
-    dynamic_recfg_ = boost::make_shared< dynamic_reconfigure::Server<TebLocalPlannerReconfigureConfig> >(nh);
-    dynamic_reconfigure::Server<TebLocalPlannerReconfigureConfig>::CallbackType cb = boost::bind(&TebLocalPlannerROS::reconfigureCB, this, _1, _2);
+    dynamic_recfg_ = boost::make_shared< dynamic_reconfigure::Server<TebLocalPlannerDynamicPlanningReconfigureConfig> >(nh);
+    dynamic_reconfigure::Server<TebLocalPlannerDynamicPlanningReconfigureConfig>::CallbackType cb = boost::bind(&TebLocalPlannerDynamicPlanningROS::reconfigureCB, this, _1, _2);
     dynamic_recfg_->setCallback(cb);
     
     // validate optimization footprint and costmap footprint
     validateFootprints(robot_model->getInscribedRadius(), robot_inscribed_radius_, cfg_.obstacles.min_obstacle_dist);
         
     // setup callback for custom obstacles
-    custom_obst_sub_ = nh.subscribe("obstacles", 1, &TebLocalPlannerROS::customObstacleCB, this);
+    custom_obst_sub_ = nh.subscribe("obstacles", 1, &TebLocalPlannerDynamicPlanningROS::customObstacleCB, this);
 
     // setup callback for custom via-points
-    via_points_sub_ = nh.subscribe("via_points", 1, &TebLocalPlannerROS::customViaPointsCB, this);
+    via_points_sub_ = nh.subscribe("via_points", 1, &TebLocalPlannerDynamicPlanningROS::customViaPointsCB, this);
     
     // initialize failure detector
     ros::NodeHandle nh_move_base("~");
@@ -183,7 +183,7 @@ void TebLocalPlannerROS::initialize(std::string name, tf2_ros::Buffer* tf, costm
     // Add custom subscribers to the failure detector
     std::string global_planner_plan;
     nh.param("global_planner_plan", global_planner_plan, std::string(""));
-    m_global_path_sub = nh.subscribe(global_planner_plan, 1, &TebLocalPlannerROS::planSub, this);
+    m_global_path_sub = nh.subscribe(global_planner_plan, 1, &TebLocalPlannerDynamicPlanningROS::planSub, this);
     ROS_INFO_STREAM("TebLocalPlanner subscribed to " << global_planner_plan);
 
     // set initialized flag
@@ -198,11 +198,11 @@ void TebLocalPlannerROS::initialize(std::string name, tf2_ros::Buffer* tf, costm
 }
 
 // FEATURE DYNAMIC PLANNING
-void TebLocalPlannerROS::planSub(const nav_msgs::PathConstPtr& global_plan_msg) {
+void TebLocalPlannerDynamicPlanningROS::planSub(const nav_msgs::PathConstPtr& global_plan_msg) {
     setPlan(global_plan_msg->poses);
 }
 
-bool TebLocalPlannerROS::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan)
+bool TebLocalPlannerDynamicPlanningROS::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan)
 {
   // check if plugin is initialized
   if(!initialized_)
@@ -225,7 +225,7 @@ bool TebLocalPlannerROS::setPlan(const std::vector<geometry_msgs::PoseStamped>& 
 }
 
 
-bool TebLocalPlannerROS::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
+bool TebLocalPlannerDynamicPlanningROS::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
 {
   std::string dummy_message;
   geometry_msgs::PoseStamped dummy_pose;
@@ -235,7 +235,7 @@ bool TebLocalPlannerROS::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   return outcome == mbf_msgs::ExePathResult::SUCCESS;
 }
 
-uint32_t TebLocalPlannerROS::computeVelocityCommands(const geometry_msgs::PoseStamped& pose,
+uint32_t TebLocalPlannerDynamicPlanningROS::computeVelocityCommands(const geometry_msgs::PoseStamped& pose,
                                                      const geometry_msgs::TwistStamped& velocity,
                                                      geometry_msgs::TwistStamped &cmd_vel,
                                                      std::string &message)
@@ -384,7 +384,7 @@ uint32_t TebLocalPlannerROS::computeVelocityCommands(const geometry_msgs::PoseSt
 
     // now we reset everything to start again with the initialization of new trajectories.
     planner_->clearPlanner();
-    ROS_WARN("TebLocalPlannerROS: trajectory is not feasible. Resetting planner...");
+    ROS_WARN("TebLocalPlannerDynamicPlanningROS: trajectory is not feasible. Resetting planner...");
     
     ++no_infeasible_plans_; // increase number of infeasible solutions in a row
     time_last_infeasible_plan_ = ros::Time::now();
@@ -397,7 +397,7 @@ uint32_t TebLocalPlannerROS::computeVelocityCommands(const geometry_msgs::PoseSt
   if (!planner_->getVelocityCommand(cmd_vel.twist.linear.x, cmd_vel.twist.linear.y, cmd_vel.twist.angular.z, cfg_.trajectory.control_look_ahead_poses))
   {
     planner_->clearPlanner();
-    ROS_WARN("TebLocalPlannerROS: velocity command invalid. Resetting planner...");
+    ROS_WARN("TebLocalPlannerDynamicPlanningROS: velocity command invalid. Resetting planner...");
     ++no_infeasible_plans_; // increase number of infeasible solutions in a row
     time_last_infeasible_plan_ = ros::Time::now();
     last_cmd_ = cmd_vel.twist;
@@ -421,7 +421,7 @@ uint32_t TebLocalPlannerROS::computeVelocityCommands(const geometry_msgs::PoseSt
       cmd_vel.twist.linear.x = cmd_vel.twist.linear.y = cmd_vel.twist.angular.z = 0;
       last_cmd_ = cmd_vel.twist;
       planner_->clearPlanner();
-      ROS_WARN("TebLocalPlannerROS: Resulting steering angle is not finite. Resetting planner...");
+      ROS_WARN("TebLocalPlannerDynamicPlanningROS: Resulting steering angle is not finite. Resetting planner...");
       ++no_infeasible_plans_; // increase number of infeasible solutions in a row
       time_last_infeasible_plan_ = ros::Time::now();
       message = "teb_local_planner steering angle is not finite";
@@ -456,7 +456,7 @@ uint32_t TebLocalPlannerROS::computeVelocityCommands(const geometry_msgs::PoseSt
 }
 
 
-bool TebLocalPlannerROS::isGoalReached()
+bool TebLocalPlannerDynamicPlanningROS::isGoalReached()
 {
   if (goal_reached_)
   {
@@ -469,7 +469,7 @@ bool TebLocalPlannerROS::isGoalReached()
 
 
 
-void TebLocalPlannerROS::updateObstacleContainerWithCostmap()
+void TebLocalPlannerDynamicPlanningROS::updateObstacleContainerWithCostmap()
 {  
   // Add costmap obstacles if desired
   if (cfg_.obstacles.include_costmap_obstacles)
@@ -497,7 +497,7 @@ void TebLocalPlannerROS::updateObstacleContainerWithCostmap()
   }
 }
 
-void TebLocalPlannerROS::updateObstacleContainerWithCostmapConverter()
+void TebLocalPlannerDynamicPlanningROS::updateObstacleContainerWithCostmapConverter()
 {
   if (!costmap_converter_)
     return;
@@ -543,7 +543,7 @@ void TebLocalPlannerROS::updateObstacleContainerWithCostmapConverter()
 }
 
 
-void TebLocalPlannerROS::updateObstacleContainerWithCustomObstacles()
+void TebLocalPlannerDynamicPlanningROS::updateObstacleContainerWithCustomObstacles()
 {
   // Add custom obstacles obtained via message
   boost::mutex::scoped_lock l(custom_obst_mutex_);
@@ -618,7 +618,7 @@ void TebLocalPlannerROS::updateObstacleContainerWithCustomObstacles()
   }
 }
 
-void TebLocalPlannerROS::updateViaPointsContainer(const std::vector<geometry_msgs::PoseStamped>& transformed_plan, double min_separation)
+void TebLocalPlannerDynamicPlanningROS::updateViaPointsContainer(const std::vector<geometry_msgs::PoseStamped>& transformed_plan, double min_separation)
 {
   via_points_.clear();
   
@@ -639,7 +639,7 @@ void TebLocalPlannerROS::updateViaPointsContainer(const std::vector<geometry_msg
   
 }
       
-Eigen::Vector2d TebLocalPlannerROS::tfPoseToEigenVector2dTransRot(const tf::Pose& tf_vel)
+Eigen::Vector2d TebLocalPlannerDynamicPlanningROS::tfPoseToEigenVector2dTransRot(const tf::Pose& tf_vel)
 {
   Eigen::Vector2d vel;
   vel.coeffRef(0) = std::sqrt( tf_vel.getOrigin().getX() * tf_vel.getOrigin().getX() + tf_vel.getOrigin().getY() * tf_vel.getOrigin().getY() );
@@ -648,7 +648,7 @@ Eigen::Vector2d TebLocalPlannerROS::tfPoseToEigenVector2dTransRot(const tf::Pose
 }
       
       
-bool TebLocalPlannerROS::pruneGlobalPlan(const tf2_ros::Buffer& tf, const geometry_msgs::PoseStamped& global_pose, std::vector<geometry_msgs::PoseStamped>& global_plan, double dist_behind_robot)
+bool TebLocalPlannerDynamicPlanningROS::pruneGlobalPlan(const tf2_ros::Buffer& tf, const geometry_msgs::PoseStamped& global_pose, std::vector<geometry_msgs::PoseStamped>& global_plan, double dist_behind_robot)
 {
   if (global_plan.empty())
     return true;
@@ -692,7 +692,7 @@ bool TebLocalPlannerROS::pruneGlobalPlan(const tf2_ros::Buffer& tf, const geomet
 }
       
 
-bool TebLocalPlannerROS::transformGlobalPlan(const tf2_ros::Buffer& tf, const std::vector<geometry_msgs::PoseStamped>& global_plan,
+bool TebLocalPlannerDynamicPlanningROS::transformGlobalPlan(const tf2_ros::Buffer& tf, const std::vector<geometry_msgs::PoseStamped>& global_plan,
                   const geometry_msgs::PoseStamped& global_pose, const costmap_2d::Costmap2D& costmap, const std::string& global_frame, double max_plan_length,
                   std::vector<geometry_msgs::PoseStamped>& transformed_plan, int* current_goal_idx, geometry_msgs::TransformStamped* tf_plan_to_global) const
 {
@@ -814,7 +814,7 @@ bool TebLocalPlannerROS::transformGlobalPlan(const tf2_ros::Buffer& tf, const st
     
       
       
-double TebLocalPlannerROS::estimateLocalGoalOrientation(const std::vector<geometry_msgs::PoseStamped>& global_plan, const geometry_msgs::PoseStamped& local_goal,
+double TebLocalPlannerDynamicPlanningROS::estimateLocalGoalOrientation(const std::vector<geometry_msgs::PoseStamped>& global_plan, const geometry_msgs::PoseStamped& local_goal,
               int current_goal_idx, const geometry_msgs::TransformStamped& tf_plan_to_global, int moving_average_length) const
 {
   int n = (int)global_plan.size();
@@ -861,7 +861,7 @@ double TebLocalPlannerROS::estimateLocalGoalOrientation(const std::vector<geomet
 }
       
       
-void TebLocalPlannerROS::saturateVelocity(double& vx, double& vy, double& omega, double max_vel_x, double max_vel_y, double max_vel_theta, double max_vel_x_backwards) const
+void TebLocalPlannerDynamicPlanningROS::saturateVelocity(double& vx, double& vy, double& omega, double max_vel_x, double max_vel_y, double max_vel_theta, double max_vel_x_backwards) const
 {
   double ratio_x = 1, ratio_omega = 1, ratio_y = 1;
   // Limit translational velocity for forward driving
@@ -879,7 +879,7 @@ void TebLocalPlannerROS::saturateVelocity(double& vx, double& vy, double& omega,
   // Limit backwards velocity
   if (max_vel_x_backwards<=0)
   {
-    ROS_WARN_ONCE("TebLocalPlannerROS(): Do not choose max_vel_x_backwards to be <=0. Disable backwards driving by increasing the optimization weight for penalyzing backwards driving.");
+    ROS_WARN_ONCE("TebLocalPlannerDynamicPlanningROS(): Do not choose max_vel_x_backwards to be <=0. Disable backwards driving by increasing the optimization weight for penalyzing backwards driving.");
   }
   else if (vx < -max_vel_x_backwards)
     ratio_x = - max_vel_x_backwards / vx;
@@ -900,7 +900,7 @@ void TebLocalPlannerROS::saturateVelocity(double& vx, double& vy, double& omega,
 }
      
      
-double TebLocalPlannerROS::convertTransRotVelToSteeringAngle(double v, double omega, double wheelbase, double min_turning_radius) const
+double TebLocalPlannerDynamicPlanningROS::convertTransRotVelToSteeringAngle(double v, double omega, double wheelbase, double min_turning_radius) const
 {
   if (omega==0 || v==0)
     return 0;
@@ -914,7 +914,7 @@ double TebLocalPlannerROS::convertTransRotVelToSteeringAngle(double v, double om
 }
      
 
-void TebLocalPlannerROS::validateFootprints(double opt_inscribed_radius, double costmap_inscribed_radius, double min_obst_dist)
+void TebLocalPlannerDynamicPlanningROS::validateFootprints(double opt_inscribed_radius, double costmap_inscribed_radius, double min_obst_dist)
 {
     ROS_WARN_COND(opt_inscribed_radius + min_obst_dist < costmap_inscribed_radius,
                   "The inscribed radius of the footprint specified for TEB optimization (%f) + min_obstacle_dist (%f) are smaller "
@@ -924,7 +924,7 @@ void TebLocalPlannerROS::validateFootprints(double opt_inscribed_radius, double 
    
    
    
-void TebLocalPlannerROS::configureBackupModes(std::vector<geometry_msgs::PoseStamped>& transformed_plan,  int& goal_idx)
+void TebLocalPlannerDynamicPlanningROS::configureBackupModes(std::vector<geometry_msgs::PoseStamped>& transformed_plan,  int& goal_idx)
 {
     ros::Time current_time = ros::Time::now();
     
@@ -983,7 +983,7 @@ void TebLocalPlannerROS::configureBackupModes(std::vector<geometry_msgs::PoseSta
                     last_preferred_rotdir_ = RotType::left;
                 else
                     last_preferred_rotdir_ = RotType::right;
-                ROS_WARN("TebLocalPlannerROS: possible oscillation (of the robot or its local plan) detected. Activating recovery strategy (prefer current turning direction during optimization).");
+                ROS_WARN("TebLocalPlannerDynamicPlanningROS: possible oscillation (of the robot or its local plan) detected. Activating recovery strategy (prefer current turning direction during optimization).");
             }
             time_last_oscillation_ = ros::Time::now();  
             planner_->setPreferredTurningDir(last_preferred_rotdir_);
@@ -992,20 +992,20 @@ void TebLocalPlannerROS::configureBackupModes(std::vector<geometry_msgs::PoseSta
         {
             last_preferred_rotdir_ = RotType::none;
             planner_->setPreferredTurningDir(last_preferred_rotdir_);
-            ROS_INFO("TebLocalPlannerROS: oscillation recovery disabled/expired.");
+            ROS_INFO("TebLocalPlannerDynamicPlanningROS: oscillation recovery disabled/expired.");
         }
     }
 
 }
      
      
-void TebLocalPlannerROS::customObstacleCB(const costmap_converter::ObstacleArrayMsg::ConstPtr& obst_msg)
+void TebLocalPlannerDynamicPlanningROS::customObstacleCB(const costmap_converter::ObstacleArrayMsg::ConstPtr& obst_msg)
 {
   boost::mutex::scoped_lock l(custom_obst_mutex_);
   custom_obstacle_msg_ = *obst_msg;  
 }
 
-void TebLocalPlannerROS::customViaPointsCB(const nav_msgs::Path::ConstPtr& via_points_msg)
+void TebLocalPlannerDynamicPlanningROS::customViaPointsCB(const nav_msgs::Path::ConstPtr& via_points_msg)
 {
   ROS_INFO_ONCE("Via-points received. This message is printed once.");
   if (cfg_.trajectory.global_plan_viapoint_sep > 0)
@@ -1025,7 +1025,7 @@ void TebLocalPlannerROS::customViaPointsCB(const nav_msgs::Path::ConstPtr& via_p
   custom_via_points_active_ = !via_points_.empty();
 }
      
-RobotFootprintModelPtr TebLocalPlannerROS::getRobotFootprintFromParamServer(const ros::NodeHandle& nh)
+RobotFootprintModelPtr TebLocalPlannerDynamicPlanningROS::getRobotFootprintFromParamServer(const ros::NodeHandle& nh)
 {
   std::string model_name; 
   if (!nh.getParam("footprint_model/type", model_name))
@@ -1147,7 +1147,7 @@ RobotFootprintModelPtr TebLocalPlannerROS::getRobotFootprintFromParamServer(cons
        
        
        
-Point2dContainer TebLocalPlannerROS::makeFootprintFromXMLRPC(XmlRpc::XmlRpcValue& footprint_xmlrpc, const std::string& full_param_name)
+Point2dContainer TebLocalPlannerDynamicPlanningROS::makeFootprintFromXMLRPC(XmlRpc::XmlRpcValue& footprint_xmlrpc, const std::string& full_param_name)
 {
    // Make sure we have an array of at least 3 elements.
    if (footprint_xmlrpc.getType() != XmlRpc::XmlRpcValue::TypeArray ||
@@ -1184,7 +1184,7 @@ Point2dContainer TebLocalPlannerROS::makeFootprintFromXMLRPC(XmlRpc::XmlRpcValue
   return footprint;
 }
 
-double TebLocalPlannerROS::getNumberFromXMLRPC(XmlRpc::XmlRpcValue& value, const std::string& full_param_name)
+double TebLocalPlannerDynamicPlanningROS::getNumberFromXMLRPC(XmlRpc::XmlRpcValue& value, const std::string& full_param_name)
 {
   // Make sure that the value we're looking at is either a double or an int.
   if (value.getType() != XmlRpc::XmlRpcValue::TypeInt &&
@@ -1198,6 +1198,6 @@ double TebLocalPlannerROS::getNumberFromXMLRPC(XmlRpc::XmlRpcValue& value, const
    return value.getType() == XmlRpc::XmlRpcValue::TypeInt ? (int)(value) : (double)(value);
 }
 
-} // end namespace teb_local_planner
+} // end namespace teb_local_planner_dynamic_planning
 
 

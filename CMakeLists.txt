@@ -131,7 +131,7 @@ generate_messages(
 #add dynamic reconfigure api
 #find_package(catkin REQUIRED dynamic_reconfigure)
 generate_dynamic_reconfigure_options(
-  cfg/TebLocalPlannerReconfigure.cfg
+  cfg/TebLocalPlannerDynamicPlanningReconfigure.cfg
 )
 
 
@@ -253,7 +253,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 install(FILES
-  teb_local_planner_plugin.xml
+  teb_local_planner_dynamic_planning_plugin.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 

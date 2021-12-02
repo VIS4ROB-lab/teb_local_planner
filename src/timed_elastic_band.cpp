@@ -36,11 +36,11 @@
  * Author: Christoph Rösmann
  *********************************************************************/
 
-#include <teb_local_planner/timed_elastic_band.h>
+#include <teb_local_planner_dynamic_planning/timed_elastic_band.h>
 
 #include <limits>
 
-namespace teb_local_planner
+namespace teb_local_planner_dynamic_planning
 {
 
 namespace
@@ -618,4 +618,4 @@ bool TimedElasticBand::isTrajectoryInsideRegion(double radius, double max_dist_b
 
 
 
-} // namespace teb_local_planner
+} // namespace teb_local_planner_dynamic_planning
